@@ -24,7 +24,7 @@ class ProductsTableSeeder extends Seeder
                     'title' => $category->name . '_' . $i,
                     'description' => $faker->paragraph(),
                     'price' => $faker->randomFloat(2, 100, 5500),
-                    'image' => 'https://via.placeholder.com/468x60?text=' . str_replace(' ', '+', $category->name) . '+' . $i,
+                    'image' => 'https://via.placeholder.com/720x520?text=' . str_replace(' ', '+', $category->name) . '+' . $i,
                     'category_id' => $category->id,
                 ]);
 
