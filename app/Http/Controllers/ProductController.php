@@ -56,6 +56,86 @@ class ProductController extends Controller
             'keyword', 'selectedPrice', 'selectedCategory', 'selectedTag'));
     }
 
+    public function productList(Request $request)
+    {
+        $keyword = $request->has('keyword') ? $request->get('keyword') : null;
+        $selectedPrice = $request->has('price') ? $request->get('price') : null;
+        $selectedCategory = $request->has('category') ? $request->get('category') : null;
+        $selectedTag = $request->has('tags') ? $request->get('tags') : [];
+
+        $categories = Category::all();
+        $tags = Tag::all();
+        $products = Product::with(['category', 'tags']);
+
+        if ($keyword !== null) {
+            $products = $products->where('title', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('description', 'LIKE', '%' . $keyword . '%')
+                ->orWhere('price', 'LIKE', '%' . $keyword . '%');
+        }
+
+        if ($selectedPrice != null) {
+            $products = $products->when($selectedPrice, function ($query) use ($selectedPrice) {
+                if ($selectedPrice == 'price_0_500') {
+                    $query->whereBetween('price', [0, 500]);
+                } elseif ($selectedPrice == 'price_501_1500') {
+                    $query->whereBetween('price', [501, 1500]);
+                } elseif ($selectedPrice == 'price_1501_3000') {
+                    $query->whereBetween('price', [1501, 3000]);
+                } elseif ($selectedPrice == 'price_3001_5000') {
+                    $query->whereBetween('price', [3001, 5000]);
+                }
+            });
+        }
+
+        if ($selectedCategory != null) {
+            $products = $products->whereCategoryId($selectedCategory);
+        }
+
+        if (is_array($selectedTag) && count($selectedTag) > 0) {
+            $products = $products->whereHas('tags', function ($query) use ($selectedTag) {
+                $query->whereIn('product_tag.tag_id', $selectedTag);
+            });
+        }
+
+        $products = $products->orderByDesc('id')->paginate(9);
+        return view('products.products_list', compact('categories', 'tags', 'products',
+            'keyword', 'selectedPrice', 'selectedCategory', 'selectedTag'));
+    }
+
+    public function create()
+    {
+        $categories = Category::all();
+        $tags = Tag::all();
+
+        return view('products.create', compact('categories', 'tags'));
+    }
+
+    public function store(Request $request)
+    {
+
+    }
+
+    public function edit($id)
+    {
+        $categories = Category::all();
+        $tags = Tag::all();
+        $product = Product::findOrFail($id);
+
+        return view('products.edit', compact('product', 'categories', 'tags'));
+    }
+
+    public function update(Request $request, $id)
+    {
+
+    }
+
+    public function destroy(Request $request)
+    {
+        Product::find($request->id)->delete();
+        session()->flash('success', 'Product deleted successfully');
+        return redirect()->back();
+    }
+
 //    public function reset()
 //    {
 //        $keyword = null;
