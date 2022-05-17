@@ -19,9 +19,9 @@ class ProductsTableSeeder extends Seeder
         $categories = Category::all();
 
         foreach ($categories as $category) {
-            for ($i = 1; $i <= 7; $i++) {
+            for ($i = 1; $i <= 30; $i++) {
                 $products = Product::create([
-                    'title' => $category->name . '_' . $i,
+                    'title' => $category->name . ' ' . $i,
                     'description' => $faker->paragraph(),
                     'price' => $faker->randomFloat(2, 100, 5500),
                     'image' => 'https://via.placeholder.com/720x520?text=' . str_replace(' ', '+', $category->name) . '+' . $i,

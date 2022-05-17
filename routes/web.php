@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', 'ProductController@index')->name('products.index');
+Route::any('/', 'ProductController@index')->name('products.index');
+//Route::get('/reset', 'ProductController@reset')->name('reset');
 
 Auth::routes();
 
