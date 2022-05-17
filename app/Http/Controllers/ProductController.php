@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -112,7 +113,31 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:products',
+            'description' => 'required',
+            'price' => 'required|numeric',
+            'category_id' => 'required',
+            'tags' => 'required',
+            'image' => 'required|url',
+        ]);
 
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $product = Product::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'price' => $request->price,
+            'category_id' => $request->category_id,
+            'image' => $request->image,
+        ]);
+
+        $product->tags()->attach($request->tags);
+
+        session()->flash('success', 'Product Add successfully');
+        return redirect()->route('products.list');
     }
 
     public function edit($id)
@@ -126,7 +151,29 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
+        $rules = [
+            'title' => 'required|unique:products,title,' . $id,
+            'description' => 'required',
+            'price' => 'required|numeric',
+            'category_id' => 'required',
+            'tags' => 'required',
+            'image' => 'required|url',
+        ];
+        $data = $this->validate($request, $rules);
 
+        $product = Product::findOrFail($id);
+        $product->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'price' => $request->price,
+            'category_id' => $request->category_id,
+            'image' => $request->image,
+        ]);
+
+        $product->tags()->sync($request->tags);
+
+        session()->flash('success', 'Product Updated Successfully');
+        return redirect()->route('products.list');
     }
 
     public function destroy(Request $request)
